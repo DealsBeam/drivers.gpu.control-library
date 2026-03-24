@@ -2744,6 +2744,7 @@ typedef enum _ctl_power_optimization_flag_t
                                                     ///< NDA clients. UBZRR and UBLRR both can not be enabled at the same time,
                                                     ///< only one can be enabled at a given time
     CTL_POWER_OPTIMIZATION_FLAG_LACE = CTL_BIT(4),  ///< Lighting Aware Contrast Enhancement
+    CTL_POWER_OPTIMIZATION_FLAG_SPH = CTL_BIT(5),   ///< Smart Power HDR, This flag is Applicable for only API version > 0
     CTL_POWER_OPTIMIZATION_FLAG_MAX = 0x80000000
 
 } ctl_power_optimization_flag_t;
