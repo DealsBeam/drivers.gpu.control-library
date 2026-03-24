@@ -87,6 +87,59 @@ Exit:
 
 /***************************************************************
  * @brief
+ * Power feature Test for SPH
+ * @param hDisplayOutput
+ * @return ctl_result_t
+ ***************************************************************/
+ctl_result_t TestSPHPowerFeature(ctl_display_output_handle_t hDisplayOutput)
+{
+    ctl_result_t Result                                    = CTL_RESULT_SUCCESS;
+    ctl_power_optimization_caps_t PowerCaps                = { 0 };
+    ctl_power_optimization_settings_t AppliedPowerSettings = { 0 };
+    ctl_power_optimization_settings_t NewPowerSettings     = { 0 };
+
+    PowerCaps.Size                                = sizeof(ctl_power_optimization_caps_t);
+    PowerCaps.Version                             = 1;
+    AppliedPowerSettings.Size                     = sizeof(ctl_power_optimization_settings_t);
+    AppliedPowerSettings.PowerOptimizationFeature = CTL_POWER_OPTIMIZATION_FLAG_SPH;
+    AppliedPowerSettings.PowerSource              = CTL_POWER_SOURCE_AC;
+    AppliedPowerSettings.PowerOptimizationPlan    = CTL_POWER_OPTIMIZATION_PLAN_BALANCED;
+    AppliedPowerSettings.Version                  = 1;
+
+    NewPowerSettings.Size                     = sizeof(ctl_power_optimization_settings_t);
+    NewPowerSettings.PowerOptimizationFeature = CTL_POWER_OPTIMIZATION_FLAG_SPH;
+    NewPowerSettings.Enable                   = TRUE;
+    NewPowerSettings.PowerSource              = CTL_POWER_SOURCE_AC;
+    NewPowerSettings.PowerOptimizationPlan    = CTL_POWER_OPTIMIZATION_PLAN_BALANCED;
+    NewPowerSettings.Version                  = 1;
+
+    // Get Applied PowerFeature Cap
+    Result = ctlGetPowerOptimizationCaps(hDisplayOutput, &PowerCaps);
+    LOG_AND_EXIT_ON_ERROR(Result, "ctlGetPowerOptimizationCaps (SPH)");
+
+    if (CTL_POWER_OPTIMIZATION_FLAG_SPH != (PowerCaps.SupportedFeatures & CTL_POWER_OPTIMIZATION_FLAG_SPH))
+    {
+        APP_LOG_WARN("SPH is not supported");
+        Result = CTL_RESULT_ERROR_UNSUPPORTED_FEATURE;
+        goto Exit;
+    }
+
+    APP_LOG_INFO("SPH is supported");
+
+    // Set Current PowerFeature
+    Result = ctlSetPowerOptimizationSetting(hDisplayOutput, &NewPowerSettings);
+    LOG_AND_EXIT_ON_ERROR(Result, "ctlSetPowerOptimizationSetting (SPH)");
+
+    // Get Applied PowerFeature
+    Result = ctlGetPowerOptimizationSetting(hDisplayOutput, &AppliedPowerSettings);
+    LOG_AND_EXIT_ON_ERROR(Result, "ctlGetPowerOptimizationSetting (SPH)");
+    APP_LOG_INFO("SPH Enable = %d", AppliedPowerSettings.Enable);
+
+Exit:
+    return Result;
+}
+/***************************************************************
+ * @brief
  * Power feature Test for DPST
  * @param hDisplayOutput
  * @return ctl_result_t
@@ -727,6 +780,10 @@ ctl_result_t EnumerateDisplayHandles(ctl_display_output_handle_t *hDisplayOutput
         STORE_AND_RESET_ERROR(Result);
 
         Result = TestCABCPowerFeature(hDisplayOutput[DisplayIndex]);
+
+        STORE_AND_RESET_ERROR(Result);
+
+        Result = TestSPHPowerFeature(hDisplayOutput[DisplayIndex]);
 
         STORE_AND_RESET_ERROR(Result);
     }
